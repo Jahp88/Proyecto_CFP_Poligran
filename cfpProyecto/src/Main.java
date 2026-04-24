@@ -1,154 +1,207 @@
 import java.io.*;
-
 import java.nio.file.*;
-
 import java.util.*;
-
 import java.util.stream.Collectors;
 
-
+/**
+ * Clase que representa un Producto en el sistema.
+ */
 class Producto {
+    private String id;
+    private String nombre;
+    private double precio;
+    private int cantidadVendida;
 
-    String id, nombre; double precio; int cantidadVendida = 0;
-
-    Producto(String id, String n, double p) { this.id = id; this.nombre = n; this.precio = p; }
+    public Producto(String id, String nombre, double precio) {
+        this.id = id;
+        this.nombre = nombre;
+        this.precio = precio;
+        this.cantidadVendida = 0;
+    }
 
     public String getId() { return id; }
-
+    public String getNombre() { return nombre; }
+    public double getPrecio() { return precio; }
+    public int getCantidadVendida() { return cantidadVendida; }
+    
+    public void agregarVenta(int cantidad) {
+        this.cantidadVendida += cantidad;
+    }
 }
 
+/**
+ * Clase que representa un Vendedor en el sistema.
+ */
 class Vendedor {
+    private String tipoDocumento;
+    private String numeroDocumento;
+    private String nombres;
+    private String apellidos;
+    private double ventasTotales;
 
-    String tipoDoc, numDoc, nombres, apellidos; double ventasTotales = 0.0;
+    public Vendedor(String tipoDocumento, String numeroDocumento, String nombres, String apellidos) {
+        this.tipoDocumento = tipoDocumento;
+        this.numeroDocumento = numeroDocumento;
+        this.nombres = nombres;
+        this.apellidos = apellidos;
+        this.ventasTotales = 0.0;
+    }
 
-    Vendedor(String td, String nd, String n, String a) { this.tipoDoc = td; this.numDoc = nd; this.nombres = n; this.apellidos = a; }
-
-    public String getNumDoc() { return numDoc; }
-
+    public String getNumeroDocumento() { return numeroDocumento; }
+    public String getNombres() { return nombres; }
+    public String getApellidos() { return apellidos; }
+    public double getVentasTotales() { return ventasTotales; }
+    
+    public void registrarVenta(double monto) {
+        this.ventasTotales += monto;
+    }
 }
 
-
+/**
+ * Clase principal encargada de la recolección, validación y reporte de los datos 
+ * de ventas generados.
+ */
 public class Main {
 
+    /**
+     * Método principal de ejecución.
+     * * @param args Argumentos de consola (no requeridos).
+     */
     public static void main(String[] args) {
-
         try {
+            System.out.println("Iniciando lectura y clasificación de datos...");
 
-            System.out.println("Iniciando...");
-
-            
-
-            Map mapaProductos = cargarDatos("productos.csv", linea -> {
-
-                String[] d = linea.split(";"); return new Producto(d[0], d[1], Double.parseDouble(d[2]));
-
+            // 1. Cargar datos maestros
+            Map<String, Producto> mapaProductos = cargarDatos("productos.csv", linea -> {
+                String[] datos = linea.split(";");
+                return new Producto(datos[0], datos[1], Double.parseDouble(datos[2]));
             }, Producto::getId);
 
-            
+            Map<String, Vendedor> mapaVendedores = cargarDatos("vendedores.csv", linea -> {
+                String[] datos = linea.split(";");
+                return new Vendedor(datos[0], datos[1], datos[2], datos[3]);
+            }, Vendedor::getNumeroDocumento);
 
-            Map mapaVendedores = cargarDatos("vendedores.csv", linea -> {
-
-                 String[] d = linea.split(";"); return new Vendedor(d[0], d[1], d[2], d[3]);
-
-            }, Vendedor::getNumDoc);
-
-
+            // 2. Procesar todos los archivos de ventas individuales
             Files.walk(Paths.get("."))
+                 .filter(path -> path.getFileName().toString().startsWith("vendedor_") && path.getFileName().toString().endsWith(".csv"))
+                 .forEach(path -> procesarArchivoVenta(path, mapaProductos, mapaVendedores));
 
-                .filter(path -> path.getFileName().toString().startsWith("vendedor_"))
-
-                .forEach(path -> procesarArchivoVenta(path, mapaProductos, mapaVendedores));
-
-
+            // 3. Generar reportes finales
             generarReportes(mapaVendedores, mapaProductos);
 
-            
+            System.out.println("¡Reportes 'reporte_vendedores.csv' y 'reporte_productos.csv' generados con éxito!");
 
-            System.out.println("¡Reportes generados!");
-
-        } catch (Exception e) { System.err.println("ERROR: " + e.getMessage()); }
-
+        } catch (Exception e) {
+            System.err.println("ERROR CRÍTICO: " + e.getMessage());
+        }
     }
 
-
-    private static  Map cargarDatos(String archivo, java.util.function.Function constructor, java.util.function.Function getKey) throws IOException {
-
-        return Files.lines(Paths.get(archivo)).map(constructor).collect(Collectors.toMap(getKey, item -> item));
-
+    /**
+     * Método genérico para cargar información desde archivos CSV a mapas de memoria.
+     * * @param <T> Tipo de entidad a cargar (Producto, Vendedor).
+     * @param archivo Nombre del archivo a leer.
+     * @param constructor Función que mapea una línea de texto a un objeto.
+     * @param getKey Función que extrae la llave primaria del objeto para el Map.
+     * @return Map con los datos procesados.
+     * @throws IOException Si ocurre un problema leyendo el archivo.
+     */
+    private static <T> Map<String, T> cargarDatos(String archivo, java.util.function.Function<String, T> constructor, java.util.function.Function<T, String> getKey) throws IOException {
+        if (!Files.exists(Paths.get(archivo))) {
+            throw new FileNotFoundException("No se encontro el archivo maestro: " + archivo);
+        }
+        return Files.lines(Paths.get(archivo))
+                    .map(constructor)
+                    .collect(Collectors.toMap(getKey, item -> item));
     }
 
-    
-
-    private static void procesarArchivoVenta(Path archivo, Map prods, Map vends) {
-
+    /**
+     * Lee un archivo de ventas individual, cruza la información y acumula los totales.
+     * Incluye validaciones para ignorar datos inconsistentes.
+     * * @param archivo Ruta del archivo del vendedor a procesar.
+     * @param productos Mapa maestro de productos registrados.
+     * @param vendedores Mapa maestro de vendedores registrados.
+     */
+    private static void procesarArchivoVenta(Path archivo, Map<String, Producto> productos, Map<String, Vendedor> vendedores) {
         try {
+            List<String> lineas = Files.readAllLines(archivo);
+            if (lineas.isEmpty()) return;
 
-            List lineas = Files.readAllLines(archivo);
-
-            String idVendedor = lineas.get(0).split(";")[1];
-
-            Vendedor vendedor = vends.get(idVendedor);
-
-            if (vendedor == null) return;
+            String[] cabecera = lineas.get(0).split(";");
+            if (cabecera.length < 2) return; // Archivo malformado
+            
+            String idVendedor = cabecera[1];
+            Vendedor vendedor = vendedores.get(idVendedor);
+            
+            if (vendedor == null) {
+                System.err.println("ADVERTENCIA: Archivo " + archivo.getFileName() + " pertenece a un vendedor no registrado (" + idVendedor + ").");
+                return;
+            }
 
             for (int i = 1; i < lineas.size(); i++) {
-
                 String[] datos = lineas.get(i).split(";");
+                if (datos.length < 2) continue; // Línea incompleta
 
-                Producto producto = prods.get(datos[0]);
-
-                int cantidad = Integer.parseInt(datos[1]);
-
-                if (producto != null) {
-
-                    vendedor.ventasTotales += producto.precio * cantidad;
-
-                    producto.cantidadVendida += cantidad;
-
+                String idProducto = datos[0];
+                int cantidad;
+                
+                try {
+                    cantidad = Integer.parseInt(datos[1]);
+                } catch (NumberFormatException e) {
+                    continue; // Cantidad no numérica
                 }
 
+                Producto producto = productos.get(idProducto);
+
+                // VALIDACIÓN EXTRA: Ignorar productos inexistentes o cantidades negativas
+                if (producto == null) {
+                    System.err.println("  -> Ignorando venta en " + archivo.getFileName() + ": ID de producto inexistente (" + idProducto + ").");
+                    continue;
+                }
+                
+                if (cantidad <= 0) {
+                    System.err.println("  -> Ignorando venta en " + archivo.getFileName() + ": Cantidad no válida (" + cantidad + ").");
+                    continue;
+                }
+
+                // Acumulación de ventas exitosa
+                vendedor.registrarVenta(producto.getPrecio() * cantidad);
+                producto.agregarVenta(cantidad);
             }
-
-        } catch (Exception e) { System.err.println("ADVERTENCIA: " + archivo.getFileName()); }
-
+        } catch (Exception e) {
+            System.err.println("ERROR procesando " + archivo.getFileName() + ": " + e.getMessage());
+        }
     }
 
-    
+    /**
+     * Clasifica los datos y genera los archivos CSV de reporte.
+     * * @param mapaVendedores Información en memoria de los vendedores.
+     * @param mapaProductos Información en memoria de los productos.
+     * @throws IOException Si ocurre un error al escribir los reportes.
+     */
+    private static void generarReportes(Map<String, Vendedor> mapaVendedores, Map<String, Producto> mapaProductos) throws IOException {
+        
+        // Reporte 1: Vendedores ordenados descendentemente por dinero recaudado
+        List<Vendedor> vendedoresOrdenados = mapaVendedores.values().stream()
+                .sorted(Comparator.comparingDouble(Vendedor::getVentasTotales).reversed())
+                .collect(Collectors.toList());
 
-    private static void generarReportes(Map mapaVendedores, Map mapaProductos) throws IOException {
-
-        List vendedoresOrdenados = mapaVendedores.values().stream()
-
-            .sorted(Comparator.comparingDouble(v -> -v.ventasTotales))
-
-            .collect(Collectors.toList());
-
-        try (PrintWriter writer = new PrintWriter("reporte_vendedores.csv")) {
-
+        try (PrintWriter writer = new PrintWriter("reporte_vendedores.csv", StandardCharsets.UTF_8.name())) {
             for (Vendedor v : vendedoresOrdenados) {
-
-                writer.printf("%s %s;%.2f\n", v.nombres, v.apellidos, v.ventasTotales);
-
+                writer.printf(Locale.US, "%s %s;%.2f\n", v.getNombres(), v.getApellidos(), v.getVentasTotales());
             }
-
         }
 
-        List productosOrdenados = mapaProductos.values().stream()
+        // Reporte 2: Productos ordenados descendentemente por cantidad vendida
+        List<Producto> productosOrdenados = mapaProductos.values().stream()
+                .sorted(Comparator.comparingInt(Producto::getCantidadVendida).reversed())
+                .collect(Collectors.toList());
 
-            .sorted(Comparator.comparingInt(p -> -p.cantidadVendida))
-
-            .collect(Collectors.toList());
-
-        try (PrintWriter writer = new PrintWriter("reporte_productos.csv")) {
-
+        try (PrintWriter writer = new PrintWriter("reporte_productos.csv", StandardCharsets.UTF_8.name())) {
             for (Producto p : productosOrdenados) {
-
-                writer.printf("%s;%.2f\n", p.nombre, p.precio);
-
+                // Se solicita imprimir solo Nombre y Precio
+                writer.printf(Locale.US, "%s;%.2f\n", p.getNombre(), p.getPrecio());
             }
-
         }
-
     }
-
 }
