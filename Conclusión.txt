@@ -1,1 +1,33 @@
+Dentro del repositorio debe haber un archivo en formato txt (texto plano), llamado conslusion.txt, en donde 
+se haga un breve resumen de los siguientes aspectos del proyecto:
+1. Lo aprendido durante el desarrollo del proyecto.
+2. Posibles aplicaciones en su vida profesional de las destrezas y conocimientos adquiridos y practicados 
+durante el desarrollo del proyecto.
+3. Las dificultades presentadas durante el desarrollo del proyecto
+                                                  SOLUCION
+1. La realizacion de este proyecto me dejo grandes enseñanzas, ya que para su realizacion se tuvo que realizar 
+ademas de seguir las indicaciones del profesor, una investigacion de los diferentes pasos que se desarrollaron 
+en el proyecto, como por ejemplo, conocer como se realiza una corrrecta documentacion en JavaDoc, esto fue de 
+gran ayuda, pues ahora se como hacerlo, y que hacerlo me sirve para llevar una correcta anotacion del trabajo 
+realizado y tambien es una forma de dar a conocer que es lo que se esta haciendo a otra persona que tambien 
+intervenga en el proyecto.
 
+Tambien se aprendio la importancia de aplicar las buenas practicas de desarollo como lo son por nombrar una de 
+ellas, el correcto nombramiento de variables, con nombres que sean bien descriptivos, con ello podemos evitar 
+que se generen conflictos en el codigo, ademas de ser por decirlo de alguna forma, un modo de estandarizar 
+nuestra forma de codificar.
+
+El uso y manipulacion de archivos planos fue otro de los aprendizajes, asi como la correcta y diversas formas 
+de trabajar con datos, es decir lo que se llaman estructuras de datos, que tratan sobre el ordenamiento y 
+localizaciond de datos en los diferentes tipos de arrglos.
+
+2.  Pienso que se aplica de manera plena a los demas aspectos de mi carrera porque justamente se debe convertir 
+en una destraza cada una de las practicas aqui realizadas, desde la claridad a la hora de documentar, hasta la 
+claridad y usabilidad del codigo que generemos.
+
+3. El proyecto en si mismo tenia varios retos, que finalmente con investigacion y preparacion, ademas de mucha 
+practica, se lograron superar para obtener el resultado requerido, sin embargo esta vez el reto mas grande provino 
+de la forma de llevar a termino el proyecto, y se trata del trabajo en equipo; en esta oportunidad no se conto con 
+la participacion y el interes que a mi personalmente me hubiera gustado, principalmente el problema radico en la 
+comunicacion entre los integrantes, al punto que de los cinco, hubo uno que nunca ni si quiera hizo el intento de 
+contactarnos a los demas, y aun asi se observa que presento su trabajo por completo desde la primera entrega.
