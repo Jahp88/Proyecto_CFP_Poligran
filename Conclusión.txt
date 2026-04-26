@@ -5,7 +5,7 @@ se haga un breve resumen de los siguientes aspectos del proyecto:
 durante el desarrollo del proyecto.
 3. Las dificultades presentadas durante el desarrollo del proyecto
                                                   SOLUCION
-1. La realizacion de este proyecto me dejo grandes enseñanzas, ya que para su realizacion se tuvo que realizar 
+1. La realizacion de este proyecto me dejo grandes enseñanzas, ya que para su ejecucion se tuvo que realizar 
 ademas de seguir las indicaciones del profesor, una investigacion de los diferentes pasos que se desarrollaron 
 en el proyecto, como por ejemplo, conocer como se realiza una corrrecta documentacion en JavaDoc, esto fue de 
 gran ayuda, pues ahora se como hacerlo, y que hacerlo me sirve para llevar una correcta anotacion del trabajo 
